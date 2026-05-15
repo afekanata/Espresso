@@ -1,0 +1,33 @@
+// Single source of truth for the DB. Generated migrations live in prisma/migrations.
+// Prisma 7: the connection URL lives in `prisma.config.ts` (for Migrate) and is
+// passed to `PrismaClient` via a driver adapter (`@prisma/adapter-better-sqlite3`).
+// For prod, swap the provider to "postgresql", the adapter to `@prisma/adapter-pg`,
+// and re-run `prisma migrate dev`.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+// `severity` and `status` are stored as String because Prisma does not support
+// native enums on SQLite. Allowed values are enforced at the API edge via
+// class-validator's @IsEnum on the DTOs. On Postgres we'd switch them to native enums.
+model Issue {
+  id          String   @id @default(uuid())
+  title       String
+  description String
+  site        String
+  severity    String
+  status      String   @default("open")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([createdAt(sort: Desc)])
+  @@index([status])
+  @@index([severity])
+  @@index([site])
+  @@map("issues")
+}

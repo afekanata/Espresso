@@ -1,0 +1,22 @@
+node_modules/
+dist/
+build/
+coverage/
+.DS_Store
+*.log
+
+# SQLite runtime DB (schema.sql in /db is the source of truth committed to the repo)
+*.sqlite
+*.sqlite-journal
+
+# Editor / OS
+.idea/
+.vscode/*
+!.vscode/extensions.json
+
+# Env: commit only .env.example. Real .env files (with secrets) stay out.
+.env.local
+.env.*.local
+.env.production
+.env.development.local
+server/.env

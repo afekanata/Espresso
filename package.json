@@ -1,0 +1,20 @@
+{
+  "name": "trial-issue-log",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Trial Issue Log — clinical-trial site-visit issue tracker (home assignment)",
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "packageManager": "pnpm@9.0.0",
+  "scripts": {
+    "dev": "pnpm -r --parallel run dev",
+    "build": "pnpm -r run build",
+    "test": "pnpm --filter server test",
+    "db:migrate": "pnpm --filter server exec prisma migrate dev",
+    "db:reset": "pnpm --filter server exec prisma migrate reset --force",
+    "db:studio": "pnpm --filter server exec prisma studio",
+    "db:schema": "pnpm --filter server exec prisma migrate diff --from-empty --to-schema-datamodel prisma/schema.prisma --script > ../db/schema.sql",
+    "csv:import": "pnpm --filter server run csv:import"
+  }
+}
