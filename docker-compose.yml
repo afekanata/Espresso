@@ -1,0 +1,47 @@
+# Trial Issue Log — production-ish single-host deployment.
+#
+# Two services: `server` (Nest + Prisma) and `web` (nginx serving the React
+# bundle + reverse-proxying /api to the server). SQLite lives on a named
+# volume so the database survives container restarts and image rebuilds.
+#
+# Usage on the host (EC2, etc.):
+#   cp .env.example .env       # then edit .env with real secrets
+#   docker compose up -d --build
+#
+# See DEPLOY.md for the full EC2 walkthrough.
+
+services:
+  server:
+    build:
+      context: .
+      dockerfile: server/Dockerfile
+    environment:
+      # In the container the SQLite file lives on a mounted volume, NOT in the
+      # repo's db/ folder. Override the dev default explicitly.
+      DATABASE_URL: file:/data/data.sqlite
+      PORT: '3000'
+      # nginx is on the same origin from the browser's POV; '*' is safe and
+      # avoids hard-coding the EC2 public DNS into the image.
+      CORS_ORIGIN: '*'
+      AUTH_USERNAME: ${AUTH_USERNAME:-admin}
+      AUTH_PASSWORD: ${AUTH_PASSWORD:?must be set}
+      JWT_SECRET: ${JWT_SECRET:?must be set}
+      JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-12h}
+    volumes:
+      - sqlite_data:/data
+    expose:
+      - '3000'
+    restart: unless-stopped
+
+  web:
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile
+    ports:
+      - '80:80'
+    depends_on:
+      - server
+    restart: unless-stopped
+
+volumes:
+  sqlite_data:

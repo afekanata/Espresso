@@ -1,0 +1,28 @@
+# Only relevant when docker build context = repo root and Dockerfile = server/Dockerfile
+node_modules
+**/node_modules
+dist
+**/dist
+.cache
+**/.cache
+coverage
+**/coverage
+.git
+.gitignore
+.idea
+.vscode
+*.log
+README.md
+DEPLOY.md
+docker-compose.yml
+
+# DB runtime files (recreated by `prisma migrate deploy`)
+db/data.sqlite
+db/data.sqlite-journal
+**/*.sqlite
+**/*.sqlite-journal
+
+# Real env files never enter the image; secrets come via docker-compose env_file
+**/.env
+**/.env.local
+**/.env.*.local

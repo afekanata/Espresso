@@ -15,6 +15,7 @@ coverage/
 !.vscode/extensions.json
 
 # Env: commit only .env.example. Real .env files (with secrets) stay out.
+.env
 .env.local
 .env.*.local
 .env.production
