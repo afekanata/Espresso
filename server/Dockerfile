@@ -33,7 +33,12 @@ RUN pnpm install --frozen-lockfile --filter server... --ignore-scripts
 COPY server ./server
 
 WORKDIR /app/server
-RUN pnpm exec prisma generate
+
+# `prisma generate` doesn't connect to the DB — it just reads schema.prisma to
+# emit the typed client. But prisma.config.ts calls env('DATABASE_URL'), which
+# is strict and throws if missing. Set a placeholder *only* for this RUN; the
+# real URL comes from docker-compose at runtime.
+RUN DATABASE_URL="file:/tmp/placeholder.db" pnpm exec prisma generate
 RUN pnpm build
 
 # Build is done — flip to production mode for the runtime.
