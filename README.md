@@ -4,6 +4,10 @@ A small but end-to-end web app for tracking issues observed during a clinical
 trial site visit. **Backend:** NestJS + Prisma + SQLite. **Frontend:** React +
 Vite + Tailwind + shadcn/ui. **Monorepo:** pnpm workspaces.
 
+> **Live demo:** **http://ec2-18-198-208-79.eu-central-1.compute.amazonaws.com/**
+> Sign in with `admin` / `<see email>` — running on an AWS EC2 t3.micro
+> behind nginx (see [`DEPLOY.md`](DEPLOY.md) for the architecture).
+
 > Built as a 3–5 hour home assignment. The README is intentionally verbose
 > because the rubric weights "**ability to explain architecture**" first.
 
@@ -17,15 +21,25 @@ Vite + Tailwind + shadcn/ui. **Monorepo:** pnpm workspaces.
 # 1. Install everything (workspace install via pnpm)
 pnpm install
 
-# 2. copy example env variable
+# 2. Copy the example env vars (DATABASE_URL, AUTH_*, JWT_*)
 cp server/.env.example server/.env
 
-# 3. Create the SQLite DB and apply migrations
+# 3. Create the SQLite DB, apply migrations, AND generate the Prisma Client.
+#    All three happen as part of `prisma migrate dev`. Run this whenever you
+#    pull schema changes too.
 pnpm db:migrate
 
 # 4. Run server (:3000) + frontend (:5173) together
 pnpm dev
 ```
+
+> **Heads up:** `pnpm install` alone won't generate the Prisma Client. We
+> deliberately removed the `postinstall: prisma generate` hook from
+> `server/package.json` because it broke Docker's workspace install (see
+> [`DEPLOY.md`](DEPLOY.md) troubleshooting). `pnpm db:migrate` is the
+> single command that gets you a working dev environment — it's the
+> canonical Prisma workflow anyway. If you ever need to re-generate the
+> client without touching migrations, `pnpm --filter server prisma:generate`.
 
 Open **http://localhost:5173** and sign in with `admin` / `admin`. Change those
 defaults via `AUTH_USERNAME` / `AUTH_PASSWORD` in [`server/.env`](server/.env).
@@ -370,8 +384,10 @@ The CSV parsing logic is **separated** from the import service
 
 ## How I'd ship this to AWS
 
-Local-only was the chosen scope for the time-box. Here's the design for the
-push, in priority order.
+**The live demo is already on AWS — EC2 t3.micro + Docker Compose** (the
+"pragmatic free-tier" path described below). The full step-by-step recipe
+that built it is in [`DEPLOY.md`](DEPLOY.md). The rest of this section is
+the production design I'd reach for next.
 
 ### Recommended production architecture
 
@@ -424,13 +440,13 @@ push, in priority order.
   JSON logging in the Nest logger; `/api/health` is the App Runner health
   check.
 
-### A pragmatic "free-tier demo URL" path (if I had another 2h)
+### The "pragmatic free-tier demo URL" path (what's actually running now)
 
-Single **EC2 `t2.micro`** with Docker Compose: nginx → frontend static +
-reverse-proxy `/api` → Nest container, SQLite file on a mounted EBS volume.
-**Honest trade-offs:** no auto-scaling, single point of failure, snapshot-based
-backups, downtime on deploy. Fine for a demo URL — **not** fine for clinical
-data.
+Single **EC2 `t3.micro`** with Docker Compose: nginx → frontend static +
+reverse-proxy `/api` → Nest container, SQLite file on a mounted Docker
+volume. **Honest trade-offs:** no auto-scaling, single point of failure,
+snapshot-based backups, downtime on deploy, HTTP-only. Fine for the demo —
+**not** fine for clinical data. Full step-by-step in [`DEPLOY.md`](DEPLOY.md).
 
 ### Best practices
 
@@ -478,8 +494,14 @@ Things I deliberately skipped, with the priorities I'd attack them in:
    `manualChunks` for `@radix-ui/*` and `@tanstack/react-query`.
 10. **Observability.** Pino + a request-id middleware on the server; OpenAPI
     doc via `@nestjs/swagger`.
-11. **Real AWS push.** Build the Dockerfile, push to ECR, wire CloudFront. The
-    plan is above — I just didn't spend the time-box on it.
+11. **Move from EC2 to the proper production architecture.** The current
+    demo runs on a single t3.micro with Docker Compose + SQLite — fine for
+    a demo URL, not for clinical data. The "Recommended production
+    architecture" above (S3+CloudFront for the frontend, App Runner / ECS
+    for the API, RDS Postgres, Secrets Manager) is the next step.
+12. **HTTPS.** Currently HTTP only. Easiest path: Cloudflare in front of
+    the EC2 (free TLS via DNS proxying). Long-term: ALB + ACM cert, or
+    Caddy with auto-Let's-Encrypt.
 
 ## Scripts cheat-sheet
 
