@@ -17,7 +17,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # pnpm via corepack (no global install, no extra layer)
 RUN corepack enable && corepack prepare pnpm@9 --activate
 
-ENV NODE_ENV=production
 WORKDIR /app
 
 # Manifests first — better Docker layer caching when only source changes.
@@ -25,7 +24,9 @@ COPY package.json pnpm-workspace.yaml pnpm-lock.yaml ./
 COPY server/package.json ./server/
 COPY frontend/package.json ./frontend/
 
-# Install only what the server workspace needs (and its transitives).
+# Install BOTH dev and prod deps — Prisma CLI, Nest CLI, ts-node, etc. live in
+# devDependencies and we need them for the build steps below. We can't set
+# NODE_ENV=production yet because that would make pnpm skip devDependencies.
 RUN pnpm install --frozen-lockfile --filter server... --ignore-scripts
 
 # Now bring in the source and build.
@@ -34,6 +35,9 @@ COPY server ./server
 WORKDIR /app/server
 RUN pnpm exec prisma generate
 RUN pnpm build
+
+# Build is done — flip to production mode for the runtime.
+ENV NODE_ENV=production
 
 EXPOSE 3000
 
