@@ -26,7 +26,7 @@ COPY server/package.json ./server/
 COPY frontend/package.json ./frontend/
 
 # Install only what the server workspace needs (and its transitives).
-RUN pnpm install --frozen-lockfile --filter server...
+RUN pnpm install --frozen-lockfile --filter server... --ignore-scripts
 
 # Now bring in the source and build.
 COPY server ./server
