@@ -27,14 +27,7 @@ COPY frontend/package.json ./frontend/
 # Install BOTH dev and prod deps — Prisma CLI, Nest CLI, ts-node, etc. live in
 # devDependencies and we need them for the build steps below. We can't set
 # NODE_ENV=production yet because that would make pnpm skip devDependencies.
-RUN pnpm install --frozen-lockfile --filter server... --ignore-scripts
-
-# --ignore-scripts above skipped better-sqlite3's install hook (which compiles
-# the native .node binary). We can't drop --ignore-scripts entirely because
-# that would also re-trigger server's own postinstall (prisma generate) BEFORE
-# the source is copied in — and that fails with `prisma: not found` under
-# pnpm workspaces. Solution: rebuild the one package that needs compilation.
-RUN pnpm rebuild better-sqlite3
+RUN pnpm install --frozen-lockfile --filter server...
 
 # Now bring in the source and build.
 COPY server ./server

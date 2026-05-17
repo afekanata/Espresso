@@ -11,8 +11,7 @@
     "test": "jest",
     "test:watch": "jest --watch",
     "csv:import": "ts-node scripts/import-csv.ts",
-    "prisma:generate": "prisma generate",
-    "postinstall": "prisma generate"
+    "prisma:generate": "prisma generate"
   },
   "dependencies": {
     "@nestjs/common": "^10.3.10",
