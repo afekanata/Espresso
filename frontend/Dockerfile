@@ -14,7 +14,7 @@ COPY package.json pnpm-workspace.yaml pnpm-lock.yaml ./
 COPY frontend/package.json ./frontend/
 COPY server/package.json ./server/
 
-RUN pnpm install --frozen-lockfile --filter frontend...
+RUN pnpm install --frozen-lockfile --filter frontend... --ignore-scripts
 
 COPY frontend ./frontend
 RUN pnpm --filter frontend build
