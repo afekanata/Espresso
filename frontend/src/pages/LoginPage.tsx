@@ -92,11 +92,6 @@ export function LoginPage() {
             >
               Sign in
             </Button>
-            <p className="text-xs text-muted-foreground">
-              Demo credentials: <code>admin</code> / <code>admin</code>.
-              Replace via <code>AUTH_USERNAME</code> / <code>AUTH_PASSWORD</code>{' '}
-              in <code>server/.env</code>.
-            </p>
           </form>
         </CardContent>
       </Card>
