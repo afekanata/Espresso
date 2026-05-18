@@ -65,7 +65,7 @@ pnpm test
 ## Stack & why each piece
 
 Every decision below has at least one alternative I considered and a reason for
-not picking it — these are the things I'd defend out loud in an interview.
+not picking it.
 
 ### Backend framework — NestJS
 
