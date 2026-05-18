@@ -21,3 +21,6 @@ coverage/
 .env.production
 .env.development.local
 server/.env
+
+# Claude Code per-project metadata
+.claude/
