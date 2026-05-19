@@ -365,20 +365,26 @@ is [`server/prisma/schema.prisma`](server/prisma/schema.prisma).
 
 ## Tests
 
-Two test suites, run via Jest (Nest's default).
+Three Jest suites, **13 tests total**. None touch the DB — they exercise
+DTO validation rules and pure functions, so they're fast and hermetic.
 
 ```bash
 pnpm test
 ```
 
-1. **`server/test/create-issue.dto.spec.ts`** — happy path + missing `title` +
-   unknown `severity` + whitespace-only-title rejection. Covers the
-   "validate inputs, return 400" requirement.
-2. **`server/test/csv-parser.spec.ts`** — parses the bundled `issues.csv` and
-   asserts row count, site distribution, and a known row's fields.
+- **[`create-issue.dto.spec.ts`](server/test/create-issue.dto.spec.ts)** — validation rules on the
+  main create DTO (required fields, enum membership, `^Site-\d+$` regex,
+  casing normalisation).
+- **[`csv-issue-row.dto.spec.ts`](server/test/csv-issue-row.dto.spec.ts)** — the CSV-only DTO
+  extension that adds an optional `@IsISO8601 createdAt`; verifies inherited
+  rules from the base DTO still fire.
+- **[`csv-parser.spec.ts`](server/test/csv-parser.spec.ts)** — the pure CSV parser against the
+  bundled `issues.csv`.
 
-The CSV parsing logic is **separated** from the import service
-(`csv-parser.ts`) precisely so that the test never touches the DB.
+The CSV parsing logic is deliberately separated from the import service
+([`csv-parser.ts`](server/src/issues/csv-parser.ts)) so the test never has
+to stand up Prisma. The DTO tests call `plainToInstance` + `validate`
+directly for the same reason.
 
 ---
 
