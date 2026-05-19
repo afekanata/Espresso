@@ -11,14 +11,13 @@ import {
   Post,
   Query,
   UploadedFile,
-  UseInterceptors,
 } from '@nestjs/common';
-import { FileInterceptor } from '@nestjs/platform-express';
 import { CreateIssueDto } from './dto/create-issue.dto';
 import { UpdateIssueDto } from './dto/update-issue.dto';
 import { ListIssuesDto } from './dto/list-issues.dto';
 import { IssuesService } from './issues.service';
 import { CsvImportService } from './csv-import.service';
+import { CsvUpload } from './csv-upload.decorator';
 
 @Controller('issues')
 export class IssuesController {
@@ -48,7 +47,7 @@ export class IssuesController {
   }
 
   @Post('import')
-  @UseInterceptors(FileInterceptor('file'))
+  @CsvUpload()
   import(@UploadedFile() file: Express.Multer.File) {
     return this.csv.importBuffer(file?.buffer);
   }
